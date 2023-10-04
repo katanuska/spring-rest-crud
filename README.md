@@ -1,0 +1,4 @@
+Create database and set database connection properties in src/main/resources/application.yml or privide them through environment variables
+SPRING_DATASOURCE_URL
+SPRING_DATASOURCE_USERNAME
+SPRING_DATASOURCE_PASSWORD

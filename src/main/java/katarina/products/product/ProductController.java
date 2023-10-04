@@ -1,0 +1,41 @@
+package katarina.products.product;
+
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+@RestController
+@RequestMapping(value = "/products")
+public class ProductController {
+
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @GetMapping
+    public Iterable<Product> getAll() {
+        return productService.getAll();
+    }
+
+    @PostMapping
+    public Product create(@RequestBody Product product) {
+        return productService.save(product);
+    }
+
+    @GetMapping("/{id}")
+    public Optional<Product> getProduct(@PathVariable Long id) {
+        return productService.getProduct(id);
+    }
+
+    @PutMapping
+    public Product update(@RequestBody Product product) {
+        return productService.save(product);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        productService.delete(id);
+    }
+}

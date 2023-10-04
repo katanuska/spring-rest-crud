@@ -1,0 +1,9 @@
+spring:
+  jpa:
+    generate-ddl: on
+  datasource:
+    url: jdbc:postgresql://localhost:5432/products
+    username: products
+    password: product_pass
+hnb:
+  url: https://api.hnb.hr/tecajn-eur/v3?valuta=USD
