@@ -4,6 +4,7 @@ import katarina.products.ProductsApplicationTests;
 import katarina.products.currency.CurrencyRateService;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.QueueDispatcher;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -48,12 +49,51 @@ public class ProductControllerIntegrationTests extends ProductsApplicationTests 
         ProductService service = new ProductService(productRepository, new CurrencyRateService(url));
         ProductController controller = new ProductController(service);
         client = MockMvcWebTestClient.bindToController(controller).build();
+
+        QueueDispatcher dispatcher = new QueueDispatcher();
+        dispatcher.setFailFast(new MockResponse());
+        hnbWebServer.setDispatcher(dispatcher);
     }
 
     @Test
-    void shouldNotReturnPriceUsdForInvalidHnbResponse() throws Exception {
-        Product savedProduct = new Product(1L, "code", "Prod name", BigDecimal.ONE, "", false);
-        Mockito.when(productRepository.findById(1L)).thenReturn(Optional.of(savedProduct));
+    void shouldInsertProduct() {
+        Product product = getProduct();
+        Mockito.when(productRepository.save(Mockito.any())).thenReturn(product);
+
+        client.post().uri("/products")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(product)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void shouldNotInsertProductWithNegativePrice() {
+        Product product = getProduct();
+        product.setPriceEur(new BigDecimal(-1));
+
+        client.post().uri("/products")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(product)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void shouldNotInsertProductWithInvalidCode() {
+        Product product = getProduct();
+        product.setCode("1");
+
+        client.post().uri("/products")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(product)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void shouldNotReturnPriceUsdForInvalidHnbResponse() {
+        Mockito.when(productRepository.findById(1L)).thenReturn(Optional.of(getProduct()));
 
         hnbWebServer.enqueue(new MockResponse()
                 .setBody(hnbIncorrectResponse)
@@ -73,9 +113,8 @@ public class ProductControllerIntegrationTests extends ProductsApplicationTests 
     }
 
     @Test
-    void shouldNotReturnPriceUsdForEmptyHnbResponse() throws Exception {
-        Product savedProduct = new Product(1L, "code", "Prod name", BigDecimal.ONE, "", false);
-        Mockito.when(productRepository.findById(1L)).thenReturn(Optional.of(savedProduct));
+    void shouldNotReturnPriceUsdForEmptyHnbResponse() {
+        Mockito.when(productRepository.findById(1L)).thenReturn(Optional.of(getProduct()));
 
         hnbWebServer.enqueue(new MockResponse()
                 .setBody("")
@@ -96,8 +135,8 @@ public class ProductControllerIntegrationTests extends ProductsApplicationTests 
     }
 
     @Test
-    void shouldReturnPriceUsd() throws Exception {
-        Product savedProduct = new Product(1L, "code", "Prod name", BigDecimal.ONE, "", false);
+    void shouldReturnPriceUsd() {
+        Product savedProduct = getProduct();
         Mockito.when(productRepository.findById(1L)).thenReturn(Optional.of(savedProduct));
 
         hnbWebServer.enqueue(new MockResponse()
@@ -105,6 +144,7 @@ public class ProductControllerIntegrationTests extends ProductsApplicationTests 
                 .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
         );
 
+        BigDecimal expectedPriceUsd = savedProduct.getPriceEur().multiply(new BigDecimal("1.0530"));
         client.get().uri("/products/1")
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
@@ -113,8 +153,11 @@ public class ProductControllerIntegrationTests extends ProductsApplicationTests 
                 .consumeWith(productEntityExchangeResult -> {
                     Product product = productEntityExchangeResult.getResponseBody();
                     Assertions.assertNotNull(product);
-                    Assertions.assertEquals(new BigDecimal("1.0530"), product.getPriceUsd());
+                    Assertions.assertEquals(expectedPriceUsd, product.getPriceUsd());
                 });
+    }
 
+    private Product getProduct() {
+        return new Product(1L, "1234567890", "Name", BigDecimal.ONE, "", false);
     }
 }

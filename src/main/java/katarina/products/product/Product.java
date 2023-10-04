@@ -1,10 +1,8 @@
 package katarina.products.product;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
@@ -13,13 +11,21 @@ public class Product {
     @Id
     @GeneratedValue
     private long id;
+
+    @Column(columnDefinition = "char(10)", unique = true)
+    @Size(min = 10, max = 10)
     private String code;
+
     private String name;
+
+    @Positive
     private BigDecimal priceEur;
+
     @Transient
-    @JsonInclude // TODO: remove if ProductDTO is added
     private BigDecimal priceUsd;
+
     private String description;
+
     private boolean isAvailable;
 
     public Product() {

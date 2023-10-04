@@ -1,5 +1,6 @@
 package katarina.products.product;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -20,7 +21,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public Product create(@RequestBody Product product) {
+    public Product create(@Valid @RequestBody Product product) {
         return productService.save(product);
     }
 
@@ -30,7 +31,7 @@ public class ProductController {
     }
 
     @PutMapping
-    public Product update(@RequestBody Product product) {
+    public Product update(@Valid @RequestBody Product product) {
         return productService.save(product);
     }
 
