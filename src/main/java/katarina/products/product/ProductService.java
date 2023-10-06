@@ -1,5 +1,6 @@
 package katarina.products.product;
 
+import jakarta.persistence.EntityNotFoundException;
 import katarina.products.currency.CurrencyRateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,10 +28,24 @@ public class ProductService {
         return products;
     }
 
-    public Product save(Product product) {
+    public Product create(Product product) {
         Product savedProduct = productRepository.save(product);
         setPriceUsd(savedProduct);
         return savedProduct;
+    }
+
+    public Product update(Product product) {
+        //TODO: add mapping
+        return productRepository.findById(product.getId())
+                .map((Product savedProduct) -> {
+                    savedProduct.setCode(product.getCode());
+                    savedProduct.setName(product.getName());
+                    savedProduct.setDescription(product.getDescription());
+                    savedProduct.setPriceEur(product.getPriceEur());
+                    savedProduct.setAvailable(product.isAvailable());
+                    return productRepository.save(product);
+                })
+                .orElseThrow(() -> new EntityNotFoundException("Product with id " + product.getId() + " is not found."));
     }
 
     public void delete(Long id) {

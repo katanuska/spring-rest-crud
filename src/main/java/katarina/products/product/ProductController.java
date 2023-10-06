@@ -22,7 +22,8 @@ public class ProductController {
 
     @PostMapping
     public Product create(@Valid @RequestBody Product product) {
-        return productService.save(product);
+        //TODO: add ProductDTO
+        return productService.create(product);
     }
 
     @GetMapping("/{id}")
@@ -32,7 +33,7 @@ public class ProductController {
 
     @PutMapping
     public Product update(@Valid @RequestBody Product product) {
-        return productService.save(product);
+        return productService.update(product);
     }
 
     @DeleteMapping("/{id}")

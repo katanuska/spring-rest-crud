@@ -1,4 +1,7 @@
-Create database and set database connection properties in src/main/resources/application.yml or privide them through environment variables
-SPRING_DATASOURCE_URL
-SPRING_DATASOURCE_USERNAME
-SPRING_DATASOURCE_PASSWORD
+1. Create PostgreSQL database.
+2. Run task bootRun of gradle wrapper with database connection properties:
+
+```
+./gradlew bootRun --args='--spring.datasource.url=jdbc:postgresql://<localhost:5432>/<products>
+--spring.datasource.username=<username> --spring.datasource.password=<password>'
+```
