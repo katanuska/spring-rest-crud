@@ -34,7 +34,7 @@ curl --location 'http://localhost:8080/products' \
   curl --location 'http://localhost:8080/products/1'
 ```
 
-- Get product
+- Delete product
 
 ```
 curl --location --request DELETE 'http://localhost:8080/products/1'
